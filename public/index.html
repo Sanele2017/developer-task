@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>API Tester</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+    h1 { margin-bottom: 24px; font-size: 22px; color: #333; }
+    label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #000;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover { background: #333; }
+    #response {
+      margin-top: 24px;
+      padding: 16px;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #333;
+      display: none;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>API Endpoint Tester</h1>
+
+    <label for="email">Email Address</label>
+    <input type="email" id="email" placeholder="you@example.com" />
+
+    <label for="url">API Endpoint URL</label>
+    <input type="url" id="url" placeholder="https://your-api.vercel.app/api/sort" />
+
+    <button onclick="testEndpoint()">Test Endpoint</button>
+
+    <div id="response"></div>
+  </div>
+
+  <script>
+    async function testEndpoint() {
+      const email = document.getElementById("email").value.trim();
+      const url = document.getElementById("url").value.trim();
+      const responseBox = document.getElementById("response");
+
+      if (!email || !url) {
+        responseBox.style.display = "block";
+        responseBox.textContent = "Please fill in both fields.";
+        return;
+      }
+
+      responseBox.style.display = "block";
+      responseBox.textContent = "Testing...";
+
+      const validationUrl = `https://yhxzjyykdsfkdrmdxgho.supabase.co/functions/v1/application-task?url=${encodeURIComponent(url)}&email=${encodeURIComponent(email)}`;
+
+      try {
+        const res = await fetch(validationUrl);
+        const text = await res.text();
+        responseBox.textContent = text;
+      } catch (err) {
+        responseBox.textContent = "Error: " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
