@@ -3,100 +3,476 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>API Tester</title>
+  <title>API Endpoint Tester</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet"/>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080b10;
+      --surface: #0e1420;
+      --border: #1e2d45;
+      --accent: #00f5a0;
+      --accent2: #00b4d8;
+      --text: #e8edf5;
+      --muted: #5a7a99;
+      --error: #ff4f6d;
+      --success: #00f5a0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
       min-height: 100vh;
-      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      overflow-x: hidden;
     }
-    .card {
-      background: white;
-      padding: 40px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,245,160,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,160,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow orbs */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0,180,216,0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb2 {
+      position: fixed;
+      bottom: -200px;
+      left: -100px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(0,245,160,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
       width: 100%;
-      max-width: 500px;
+      max-width: 560px;
+      animation: fadeUp 0.8s ease both;
     }
-    h1 { margin-bottom: 24px; font-size: 22px; color: #333; }
-    label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 36px;
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0,245,160,0.08);
+      border: 1px solid rgba(0,245,160,0.2);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(28px, 6vw, 42px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.5;
+    }
+
+    /* Corner decoration */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: -1px;
+      right: -1px;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(225deg, rgba(0,245,160,0.1), transparent);
+      border-radius: 0 16px 0 0;
+    }
+
+    /* Form fields */
+    .field {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    label .icon {
+      width: 18px;
+      height: 18px;
+      background: rgba(0,245,160,0.1);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+
     input {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      outline: none;
     }
+
+    input::placeholder { color: var(--muted); opacity: 0.6; }
+
+    input:focus {
+      border-color: rgba(0,245,160,0.4);
+      background: rgba(0,245,160,0.03);
+      box-shadow: 0 0 0 3px rgba(0,245,160,0.06), 0 0 20px rgba(0,245,160,0.05);
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 28px 0;
+      color: var(--border);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Button */
     button {
       width: 100%;
-      padding: 12px;
-      background: #000;
-      color: white;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
       border: none;
-      border-radius: 6px;
-      font-size: 16px;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #080b10;
       cursor: pointer;
+      letter-spacing: 0.02em;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s, box-shadow 0.15s;
     }
-    button:hover { background: #333; }
-    #response {
-      margin-top: 24px;
-      padding: 16px;
-      background: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 14px;
-      color: #333;
+
+    button::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 30px rgba(0,245,160,0.25);
+    }
+
+    button:hover::before { opacity: 1; }
+    button:active { transform: translateY(0); }
+
+    button.loading {
+      pointer-events: none;
+      opacity: 0.8;
+    }
+
+    .btn-text { position: relative; z-index: 1; }
+
+    /* Response box */
+    .response-wrap {
+      margin-top: 28px;
       display: none;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .response-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .response-label {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .status-dot.success { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .status-dot.error { background: var(--error); box-shadow: 0 0 8px var(--error); }
+
+    .response-box {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text);
       word-break: break-all;
+      position: relative;
+    }
+
+    .response-box.success { border-color: rgba(0,245,160,0.25); }
+    .response-box.error { border-color: rgba(255,79,109,0.25); color: var(--error); }
+
+    /* Terminal cursor effect on response */
+    .response-box::after {
+      content: '█';
+      color: var(--accent);
+      animation: blink 1s infinite;
+      font-size: 12px;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 28px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+
+    .footer span { color: var(--accent); }
+
+    /* Scanline effect */
+    .scanline {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.15;
+      animation: scan 6s linear infinite;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    @keyframes scan {
+      from { top: -2px; }
+      to { top: 100vh; }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>API Endpoint Tester</h1>
+  <div class="orb2"></div>
+  <div class="scanline"></div>
 
-    <label for="email">Email Address</label>
-    <input type="email" id="email" placeholder="you@example.com" />
+  <div class="wrapper">
+    <div class="header">
+      <div class="badge">Live Validator</div>
+      <h1>API Endpoint<br/><span>Tester</span></h1>
+      <p class="subtitle">Validate your endpoint against the assessment<br/>criteria in real-time.</p>
+    </div>
 
-    <label for="url">API Endpoint URL</label>
-    <input type="url" id="url" placeholder="https://your-api.vercel.app/api/sort" />
+    <div class="card">
+      <div class="field">
+        <label>
+          <span class="icon">@</span>
+          Email Address
+        </label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
 
-    <button onclick="testEndpoint()">Test Endpoint</button>
+      <div class="field">
+        <label>
+          <span class="icon">//</span>
+          API Endpoint URL
+        </label>
+        <input type="url" id="url" placeholder="https://your-api.vercel.app/api/sort" autocomplete="off"/>
+      </div>
 
-    <div id="response"></div>
+      <div class="divider">ready to validate</div>
+
+      <button id="btn" onclick="testEndpoint()">
+        <span class="btn-text">Run Validation →</span>
+      </button>
+
+      <div class="response-wrap" id="responseWrap">
+        <div class="response-header">
+          <span class="response-label">Response</span>
+          <span class="status-dot" id="statusDot"></span>
+        </div>
+        <div class="response-box" id="responseBox"></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Built with precision · <span>Powered by Vercel</span>
+    </div>
   </div>
 
   <script>
     async function testEndpoint() {
       const email = document.getElementById("email").value.trim();
       const url = document.getElementById("url").value.trim();
-      const responseBox = document.getElementById("response");
+      const responseWrap = document.getElementById("responseWrap");
+      const responseBox = document.getElementById("responseBox");
+      const statusDot = document.getElementById("statusDot");
+      const btn = document.getElementById("btn");
+      const btnText = btn.querySelector(".btn-text");
 
       if (!email || !url) {
-        responseBox.style.display = "block";
-        responseBox.textContent = "Please fill in both fields.";
+        show("Please fill in both fields.", "error");
         return;
       }
 
-      responseBox.style.display = "block";
-      responseBox.textContent = "Testing...";
+      // Loading state
+      btn.classList.add("loading");
+      btnText.textContent = "Validating...";
+      show("Sending request...", "");
 
       const validationUrl = `https://yhxzjyykdsfkdrmdxgho.supabase.co/functions/v1/application-task?url=${encodeURIComponent(url)}&email=${encodeURIComponent(email)}`;
 
       try {
         const res = await fetch(validationUrl);
         const text = await res.text();
-        responseBox.textContent = text;
+        const isSuccess = text.toLowerCase().includes("congrats") || text.toLowerCase().includes("success");
+        show(text, isSuccess ? "success" : "error");
       } catch (err) {
-        responseBox.textContent = "Error: " + err.message;
+        show("Error: " + err.message, "error");
+      } finally {
+        btn.classList.remove("loading");
+        btnText.textContent = "Run Validation →";
       }
     }
+
+    function show(message, type) {
+      const wrap = document.getElementById("responseWrap");
+      const box = document.getElementById("responseBox");
+      const dot = document.getElementById("statusDot");
+
+      wrap.style.display = "block";
+      box.textContent = message;
+      box.className = "response-box " + type;
+      dot.className = "status-dot " + type;
+    }
+
+    // Allow Enter key to submit
+    document.addEventListener("keydown", e => {
+      if (e.key === "Enter") testEndpoint();
+    });
   </script>
 </body>
 </html>
+```
